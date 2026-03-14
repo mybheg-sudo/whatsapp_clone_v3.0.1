@@ -3,5 +3,4 @@
 node_modules/
 uploads/*
 !uploads/.gitkeep
-.env
 database.sqlite
