@@ -173,11 +173,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const token = localStorage.getItem('mybheg_auth_token') || sessionStorage.getItem('mybheg_auth_token');
         if (!token) { window.location.href = 'login.php'; return; }
 
         // Profil bilgileri
-        const userData = JSON.parse(localStorage.getItem('user_data') || sessionStorage.getItem('user_data') || '{}');
+        const userData = JSON.parse(localStorage.getItem('mybheg_user') || sessionStorage.getItem('mybheg_user') || '{}');
         document.getElementById('settingsUsername').textContent = userData.username || 'admin1';
         document.getElementById('settingsPhone').textContent = userData.systemPhone ? `+${userData.systemPhone}` : '+905419682572';
 
@@ -227,10 +227,10 @@
 
         // Logout
         document.getElementById('logoutBtn').addEventListener('click', function() {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_data');
-            sessionStorage.removeItem('auth_token');
-            sessionStorage.removeItem('user_data');
+            localStorage.removeItem('mybheg_auth_token');
+            localStorage.removeItem('mybheg_user');
+            sessionStorage.removeItem('mybheg_auth_token');
+            sessionStorage.removeItem('mybheg_user');
             window.location.href = 'login.php';
         });
     });
