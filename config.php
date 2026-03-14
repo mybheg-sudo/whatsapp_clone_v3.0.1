@@ -5,11 +5,25 @@ date_default_timezone_set('Europe/Istanbul');
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-$host = getenv('DB_HOST') ?: '92.113.22.4';
-$db   = getenv('DB_NAME') ?: 'u183773716_whatsapp';
-$user = getenv('DB_USER') ?: 'u183773716_whatsapp';
-$pass = getenv('DB_PASS') ?: 'c4*M0X>wlNoF';
-$port = getenv('DB_PORT') ?: '3306';
+$is_local_dev = false; // Kendi bilgisayarınızda (localhost) test ederken burayı 'true' yapın
+
+if ($is_local_dev || (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)) {
+    // Lokal geliştirme ortamı: Coolify veritabanına uzaktan bağlanma ayarları
+    // Not: n8n entegrasyonu için açtığımız Dış Port (33060) üzerinden bağlanılır
+    $host = 'coolify.motomotomasyon.com';
+    $db   = 'default';
+    $user = 'mysql';
+    $pass = 'JFUwAOUo5OyP1sOXMPM1UOkZjMM2hA74naztjHEUqb414LYhYCEa6pP7AM5zv1MO';
+    $port = '33060';
+} else {
+    // Üretim ortamı (Coolify Sunucusu) veya Hostinger Fall-back ayarları
+    // Coolify bu bilgileri otomatik olarak "Environment Variables" ile enjekte eder
+    $host = getenv('DB_HOST') ?: '92.113.22.4';
+    $db   = getenv('DB_NAME') ?: 'u183773716_whatsapp';
+    $user = getenv('DB_USER') ?: 'u183773716_whatsapp';
+    $pass = getenv('DB_PASS') ?: 'c4*M0X>wlNoF';
+    $port = getenv('DB_PORT') ?: '3306';
+}
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
