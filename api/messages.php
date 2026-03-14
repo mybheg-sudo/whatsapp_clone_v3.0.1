@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth_utils.php';
 
 // Yetkilendirme Kontrolü
-$userId = verifyTokenAndGetUser();
+verifyTokenAndGetUser();
 
 header('Content-Type: application/json');
 
@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// JS Frontend'den contact_id parametresi alıyoruz
 $contactId = $_GET['contact_id'] ?? '';
 
 if (empty($contactId)) {
@@ -24,20 +23,18 @@ if (empty($contactId)) {
 }
 
 try {
-    // API Dokümanına uygun olarak belirtilen ID'li kişinin mesajlarını getir
-    // (Aynı zamanda $userId ile yetki/izolasyon kısıtlaması eklenmiştir)
-    $stmt = $pdo->prepare("SELECT id, direction, type, content, timestamp FROM messages WHERE user_id = ? AND contact_id = ? ORDER BY timestamp ASC");
-    $stmt->execute([$userId, $contactId]);
+    $stmt = $pdo->prepare("SELECT id, direction, type, content, timestamp FROM messages WHERE contact_id = ? ORDER BY timestamp ASC");
+    $stmt->execute([$contactId]);
     $messages = $stmt->fetchAll();
 
     $formattedMessages = [];
     foreach ($messages as $m) {
         $formattedMessages[] = [
             'id' => $m['id'],
-            'direction' => $m['direction'], // incoming veya outgoing
+            'direction' => $m['direction'],
             'type' => $m['type'] ?? 'text',
             'content' => $m['content'],
-            'timestamp' => $m['timestamp'] // 2023-10-25T14:20:00.000Z formatında
+            'timestamp' => $m['timestamp']
         ];
     }
 

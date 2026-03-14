@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth_utils.php';
 
 // Yetkilendirme Kontrolü
-$userId = verifyTokenAndGetUser();
+verifyTokenAndGetUser();
 
 header('Content-Type: application/json');
 
@@ -17,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $searchTerm = $_GET['search'] ?? '';
     
-    // Kontakları ve her kontak için en son mesajı getiren JOIN sorgusu
     $query = "
         SELECT 
             c.id, 
@@ -30,14 +29,13 @@ try {
         LEFT JOIN (
             SELECT contact_id, MAX(timestamp) as max_time
             FROM messages
-            WHERE user_id = ?
             GROUP BY contact_id
         ) latest_msg ON c.id = latest_msg.contact_id
         LEFT JOIN messages m ON latest_msg.contact_id = m.contact_id AND latest_msg.max_time = m.timestamp
-        WHERE c.user_id = ?
+        WHERE 1=1
     ";
     
-    $params = [$userId, $userId];
+    $params = [];
     
     if (!empty($searchTerm)) {
         $query .= " AND (c.name LIKE ? OR c.phone LIKE ?)";
@@ -52,7 +50,6 @@ try {
     $stmt->execute($params);
     $contacts = $stmt->fetchAll();
     
-    // API dökümanıyla birebir eşleşen format oluştur
     $formattedOptions = [];
     foreach ($contacts as $c) {
         $formattedOptions[] = [

@@ -40,10 +40,7 @@ if ($action === 'add') {
     exit;
 }
 
-$payload = json_encode([
-    'phone'   => $phone,
-    'user_id' => $userId
-]);
+$payload = json_encode(['phone' => $phone]);
 
 $ch = curl_init($n8nUrl);
 curl_setopt_array($ch, [

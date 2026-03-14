@@ -7,7 +7,7 @@ require_once __DIR__ . '/auth_utils.php';
 if (isset($_GET['token'])) {
     $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $_GET['token'];
 }
-$userId = verifyTokenAndGetUser();
+verifyTokenAndGetUser();
 
 $contactId = $_GET['contact_id'] ?? '';
 $lastId = intval($_GET['last_id'] ?? 0);
@@ -40,10 +40,10 @@ while ((time() - $startTime) < $maxTime) {
         $stmt = $pdo->prepare(
             "SELECT id, direction, type, content, timestamp 
              FROM messages 
-             WHERE user_id = ? AND contact_id = ? AND id > ?
+             WHERE contact_id = ? AND id > ?
              ORDER BY timestamp ASC"
         );
-        $stmt->execute([$userId, $contactId, $lastId]);
+        $stmt->execute([$contactId, $lastId]);
         $newMessages = $stmt->fetchAll();
 
         if (!empty($newMessages)) {

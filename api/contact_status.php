@@ -28,10 +28,7 @@ $phone = preg_replace('/[^0-9]/', '', $phone);
 $n8nBase = getenv('N8N_BASE_URL') ?: 'https://n8n.motomotomasyon.com';
 $url = rtrim($n8nBase, '/') . '/webhook/get-contact-status';
 
-$payload = json_encode([
-    'phone'   => $phone,
-    'user_id' => $userId
-]);
+$payload = json_encode(['phone' => $phone]);
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [

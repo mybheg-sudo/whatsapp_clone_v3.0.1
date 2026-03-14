@@ -5,7 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth_utils.php';
 
 // Yetkilendirme Kontrolü
-$userId = verifyTokenAndGetUser();
+verifyTokenAndGetUser();
 
 header('Content-Type: application/json');
 
@@ -37,7 +37,6 @@ $n8nUrl = rtrim($n8nBase, '/') . '/webhook/send-whatsapp';
 $payload = json_encode([
     'phone'      => $phone,
     'message'    => $message,
-    'user_id'    => $userId,
     'contact_id' => $contactId
 ]);
 
@@ -63,14 +62,14 @@ if ($error) {
     exit;
 }
 
-// Giden mesajı MySQL'e de logla (n8n tarafında da loglanıyor ama panel tarafında da tutulmalı)
+// Giden mesajı MySQL'e logla
 if ($pdo && !empty($contactId)) {
     try {
         $stmt = $pdo->prepare(
-            "INSERT INTO messages (user_id, contact_id, phone, direction, type, content, created_at, timestamp) 
-             VALUES (?, ?, ?, 'outgoing', 'text', ?, NOW(), NOW())"
+            "INSERT INTO messages (contact_id, phone, direction, type, content, created_at, timestamp) 
+             VALUES (?, ?, 'outgoing', 'text', ?, NOW(), NOW())"
         );
-        $stmt->execute([$userId, $contactId, $phone, $message]);
+        $stmt->execute([$contactId, $phone, $message]);
     } catch (\PDOException $e) {
         error_log("Giden mesaj log hatası: " . $e->getMessage());
     }

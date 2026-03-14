@@ -1,10 +1,10 @@
 <?php
 // api/stats.php
-// İstatistik verileri — MySQL messages tablosundan + n8n webhook'larından
+// İstatistik verileri — MySQL messages tablosundan
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth_utils.php';
 
-$userId = verifyTokenAndGetUser();
+verifyTokenAndGetUser();
 
 header('Content-Type: application/json');
 
@@ -30,15 +30,14 @@ if (!$pdo) {
 
 try {
     // Bugünkü mesajlar
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->query("
         SELECT 
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE DATE(created_at) = CURDATE() AND user_id = ?
+        WHERE DATE(created_at) = CURDATE()
     ");
-    $stmt->execute([$userId]);
     $today = $stmt->fetch();
     $stats['today'] = [
         'sent'     => (int)($today['sent'] ?? 0),
@@ -47,15 +46,14 @@ try {
     ];
 
     // Bu hafta
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->query("
         SELECT 
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND user_id = ?
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
     ");
-    $stmt->execute([$userId]);
     $week = $stmt->fetch();
     $stats['week'] = [
         'sent'     => (int)($week['sent'] ?? 0),
@@ -64,15 +62,14 @@ try {
     ];
 
     // Bu ay
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->query("
         SELECT 
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND user_id = ?
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     ");
-    $stmt->execute([$userId]);
     $month = $stmt->fetch();
     $stats['month'] = [
         'sent'     => (int)($month['sent'] ?? 0),
@@ -81,39 +78,34 @@ try {
     ];
 
     // Toplam
-    $stmt = $pdo->prepare("SELECT COUNT(*) as cnt FROM contacts WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $stmt = $pdo->query("SELECT COUNT(*) as cnt FROM contacts");
     $stats['total']['contacts'] = (int)$stmt->fetchColumn();
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) as cnt FROM messages WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $stmt = $pdo->query("SELECT COUNT(*) as cnt FROM messages");
     $stats['total']['messages'] = (int)$stmt->fetchColumn();
 
     // En aktif 5 kişi
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->query("
         SELECT c.name, c.phone, COUNT(m.id) as msg_count
         FROM contacts c
         JOIN messages m ON c.id = m.contact_id
-        WHERE c.user_id = ?
         GROUP BY c.id, c.name, c.phone
         ORDER BY msg_count DESC
         LIMIT 5
     ");
-    $stmt->execute([$userId]);
     $stats['top_contacts'] = $stmt->fetchAll();
 
     // Son 7 günlük günlük mesaj sayısı (grafik için)
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->query("
         SELECT 
             DATE(created_at) as date,
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND user_id = ?
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
         GROUP BY DATE(created_at)
         ORDER BY date ASC
     ");
-    $stmt->execute([$userId]);
     $stats['recent_activity'] = $stmt->fetchAll();
 
 } catch (\PDOException $e) {
