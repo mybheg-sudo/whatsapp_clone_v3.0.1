@@ -48,24 +48,25 @@ if ($isProduction && getenv('CSP_ENABLED') === 'true') {
 define('JWT_SECRET', getenv('JWT_SECRET') ?: 'mybheg_dev_secret_key_change_in_production');
 
 // Veritabanı bağlantı bilgileri (Environment Variables üzerinden alınır)
+// PostgreSQL bağlantısı
 $host = getenv('DB_HOST') ?: 'localhost';
-$db   = getenv('DB_NAME') ?: 'whatsapp_clone_db';
-$user = getenv('DB_USER') ?: 'root';
+$db   = getenv('DB_NAME') ?: 'mybheg_crm';
+$user = getenv('DB_USER') ?: 'mybheg';
 $pass = getenv('DB_PASS') ?: '';
-$port = getenv('DB_PORT') ?: '3306';
-$charset = 'utf8mb4';
+$port = getenv('DB_PORT') ?: '5432';
 
-$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
+$dsn = "pgsql:host=$host;port=$port;dbname=$db";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
-    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'",
 ];
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+    // PostgreSQL client encoding
+    $pdo->exec("SET client_encoding TO 'UTF8'");
 } catch (\PDOException $e) {
     $pdo = null;
-    error_log("MySQL bağlantı hatası: " . $e->getMessage());
+    error_log("PostgreSQL bağlantı hatası: " . $e->getMessage());
 }

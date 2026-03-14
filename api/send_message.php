@@ -62,14 +62,14 @@ if ($error) {
     exit;
 }
 
-// Giden mesajı MySQL'e logla
+// Giden mesajı PostgreSQL'e logla
 if ($pdo && !empty($contactId)) {
     try {
         $stmt = $pdo->prepare(
-            "INSERT INTO messages (contact_id, phone, direction, type, content, timestamp) 
-             VALUES (?, ?, 'outgoing', 'text', ?, NOW())"
+            "INSERT INTO messages (contact_id, direction, type, content, timestamp) 
+             VALUES (?, 'outgoing', 'text', ?, NOW())"
         );
-        $stmt->execute([$contactId, $phone, $message]);
+        $stmt->execute([$contactId, $message]);
     } catch (\PDOException $e) {
         error_log("Giden mesaj log hatası: " . $e->getMessage());
     }

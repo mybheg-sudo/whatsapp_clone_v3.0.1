@@ -1,6 +1,6 @@
 <?php
 // api/stats.php
-// İstatistik verileri — MySQL messages tablosundan
+// İstatistik verileri — PostgreSQL messages tablosundan
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth_utils.php';
 
@@ -36,7 +36,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE DATE(timestamp) = CURDATE()
+        WHERE DATE(timestamp) = CURRENT_DATE
     ");
     $today = $stmt->fetch();
     $stats['today'] = [
@@ -52,7 +52,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
     ");
     $week = $stmt->fetch();
     $stats['week'] = [
@@ -68,7 +68,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '30 days'
     ");
     $month = $stmt->fetch();
     $stats['month'] = [
@@ -102,7 +102,7 @@ try {
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received
         FROM messages 
-        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
         GROUP BY DATE(timestamp)
         ORDER BY date ASC
     ");

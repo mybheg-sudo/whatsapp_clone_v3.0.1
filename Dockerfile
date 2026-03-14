@@ -3,13 +3,12 @@ FROM php:8.2-apache
 # Enable Apache modules
 RUN a2enmod rewrite headers
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql
-
-# Install curl extension
-RUN apt-get update && apt-get install -y libcurl4-openssl-dev && \
-    docker-php-ext-install curl && \
-    rm -rf /var/lib/apt/lists/*
+# Install PHP extensions (MySQL + PostgreSQL PDO)
+RUN apt-get update && apt-get install -y \
+        libpq-dev \
+        libcurl4-openssl-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Apache configuration for PHP routing
 RUN echo '<Directory /var/www/html>\n\
