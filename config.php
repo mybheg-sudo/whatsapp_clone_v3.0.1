@@ -1,29 +1,58 @@
 <?php
 // config.php
-// Üretim ortamı (Hostinger) ayarları
+// Üretim ve geliştirme ortamları ayarları
 date_default_timezone_set('Europe/Istanbul');
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
 
-$is_local_dev = false; // Kendi bilgisayarınızda (localhost) test ederken burayı 'true' yapın
-
-if ($is_local_dev || (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)) {
-    // Lokal geliştirme ortamı: Coolify veritabanına uzaktan bağlanma ayarları
-    // Not: n8n entegrasyonu için açtığımız Dış Port (33060) üzerinden bağlanılır
-    $host = 'coolify.motomotomasyon.com';
-    $db   = 'default';
-    $user = 'mysql';
-    $pass = 'JFUwAOUo5OyP1sOXMPM1UOkZjMM2hA74naztjHEUqb414LYhYCEa6pP7AM5zv1MO';
-    $port = '33060';
-} else {
-    // Üretim ortamı (Coolify Sunucusu) veya Hostinger Fall-back ayarları
-    // Coolify bu bilgileri otomatik olarak "Environment Variables" ile enjekte eder
-    $host = getenv('DB_HOST') ?: '92.113.22.4';
-    $db   = getenv('DB_NAME') ?: 'u183773716_whatsapp';
-    $user = getenv('DB_USER') ?: 'u183773716_whatsapp';
-    $pass = getenv('DB_PASS') ?: 'c4*M0X>wlNoF';
-    $port = getenv('DB_PORT') ?: '3306';
+// Ortam değişkenlerini .env dosyasından yükleme (lokal geliştirme için)
+if (file_exists(__DIR__ . '/.env')) {
+    $env_array = parse_ini_file(__DIR__ . '/.env');
+    foreach ($env_array as $key => $value) {
+        putenv("$key=$value");
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+    }
 }
+
+// Application environment
+$appEnv = getenv('APP_ENV') ?: 'development';
+$isProduction = ($appEnv === 'production');
+
+if ($isProduction) {
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+}
+
+// Production Security — HTTPS zorlama (kullanıcı onayıyla aktif)
+if ($isProduction && getenv('FORCE_HTTPS') === 'true') {
+    if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+        $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        header("Location: $redirect", true, 301);
+        exit;
+    }
+    // HSTS Header
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+}
+
+// Production Security — CSP & security headers
+if ($isProduction && getenv('CSP_ENABLED') === 'true') {
+    header("X-Content-Type-Options: nosniff");
+    header("X-Frame-Options: DENY");
+    header("X-XSS-Protection: 1; mode=block");
+    header("Referrer-Policy: strict-origin-when-cross-origin");
+}
+
+// JWT Secret (environment variable'dan alınır)
+define('JWT_SECRET', getenv('JWT_SECRET') ?: 'mybheg_dev_secret_key_change_in_production');
+
+// Veritabanı bağlantı bilgileri (Environment Variables üzerinden alınır)
+$host = getenv('DB_HOST') ?: 'localhost';
+$db   = getenv('DB_NAME') ?: 'whatsapp_clone_db';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
+$port = getenv('DB_PORT') ?: '3306';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
@@ -37,7 +66,6 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    // MySQL bağlantı hatası — $pdo null olarak bırak, gereken yerlerde kontrol edilecek
     $pdo = null;
     error_log("MySQL bağlantı hatası: " . $e->getMessage());
 }

@@ -4,96 +4,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MYBHEG Kurumsal İletişim Paneli - Giriş">
+    <meta name="theme-color" content="#1E293B">
     <title>MYBHEG - Kurumsal Giriş</title>
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="manifest" href="manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
+    <script src="assets/js/theme.js"></script>
     <style>
         body {
-            background-color: var(--bg-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            background-color: var(--bg-main);
+            /* Soft animated background for login */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(30, 41, 59, 0.05) 0px, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
         }
 
         .login-card {
             width: 100%;
-            max-width: 400px;
-            padding: 2.5rem;
-            border-radius: 16px;
-            background-color: #ffffff;
-            box-shadow: 0 10px 30px rgba(26, 42, 108, 0.08);
-            /* brand-primary hint */
-            border: 1px solid var(--border-color);
+            max-width: 420px;
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .login-logo {
-            font-size: 1.8rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
             font-weight: 800;
-            color: var(--brand-primary);
             text-align: center;
             margin-bottom: 0.5rem;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .login-subtitle {
             text-align: center;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            border-color: #e2e8f0;
-        }
-
-        .form-control:focus {
-            border-color: rgba(26, 42, 108, 0.4);
-            box-shadow: 0 0 0 4px rgba(26, 42, 108, 0.1);
-        }
-
-        .btn-login {
-            background-color: var(--brand-primary);
-            color: #ffffff;
-            font-weight: 600;
-            padding: 0.75rem;
-            border-radius: 8px;
-            width: 100%;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .btn-login:hover {
-            background-color: var(--brand-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 78, 146, 0.2);
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .form-label {
             font-size: 0.85rem;
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--trans-smooth);
+        }
+
+        .form-control:focus {
+            background-color: var(--bg-panel-solid);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+            padding: 0.85rem;
+            border-radius: 12px;
+            width: 100%;
+            transition: var(--trans-smooth);
+            border: none;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(30, 41, 59, 0.2);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 41, 59, 0.3);
+            color: #ffffff;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 
 <body>
 
-    <div class="login-card">
+    <div class="login-card glass-panel">
         <div class="login-logo">MYBHEG</div>
-        <div class="login-subtitle">Kurumsal İletişim Paneli Girişi</div>
+        <div class="login-subtitle">Kurumsal İletişim Paneli</div>
 
         <!-- Alert Boxt for Errors -->
-        <div id="loginAlert" class="alert alert-danger d-none py-2" role="alert" style="font-size: 0.85rem;">
+        <div id="loginAlert" class="alert alert-danger d-none py-2" role="alert" style="font-size: 0.85rem; border-radius: 10px;">
             Giriş başarısız oldu. Lütfen bilgilerinizi kontrol edin.
         </div>
 
         <form id="loginForm">
             <div class="mb-3">
                 <label for="username" class="form-label">Kullanıcı Adı</label>
-                <input type="text" class="form-control" id="username" placeholder="Örn: admin1" required>
+                <input type="text" class="form-control" id="username" placeholder="Örn: admin" required>
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label">Şifre</label>
@@ -104,8 +138,10 @@
         </form>
 
         <div class="text-center mt-4">
-            <small class="text-muted">Yardıma mı ihtiyacınız var? <a href="#" class="text-decoration-none"
-                    style="color: var(--brand-secondary)">Destek Ekibi</a> ile iletişime geçin.</small>
+            <small class="text-muted" style="font-size: 0.8rem;">
+                Yardıma mı ihtiyacınız var? 
+                <a href="#" class="text-decoration-none fw-bold" style="color: var(--accent-color)">Destek Ekibi</a> ile iletişime geçin.
+            </small>
         </div>
     </div>
 

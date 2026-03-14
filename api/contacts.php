@@ -15,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
+    $searchTerm = $_GET['search'] ?? '';
+    
     // Kontakları ve her kontak için en son mesajı getiren JOIN sorgusu
     $query = "
         SELECT 
@@ -33,11 +35,21 @@ try {
         ) latest_msg ON c.id = latest_msg.contact_id
         LEFT JOIN messages m ON latest_msg.contact_id = m.contact_id AND latest_msg.max_time = m.timestamp
         WHERE c.user_id = ?
-        ORDER BY m.timestamp DESC, c.id DESC
     ";
     
+    $params = [$userId, $userId];
+    
+    if (!empty($searchTerm)) {
+        $query .= " AND (c.name LIKE ? OR c.phone LIKE ?)";
+        $searchWild = '%' . $searchTerm . '%';
+        $params[] = $searchWild;
+        $params[] = $searchWild;
+    }
+    
+    $query .= " ORDER BY m.timestamp DESC, c.id DESC";
+    
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$userId, $userId]);
+    $stmt->execute($params);
     $contacts = $stmt->fetchAll();
     
     // API dökümanıyla birebir eşleşen format oluştur

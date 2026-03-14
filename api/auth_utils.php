@@ -3,13 +3,19 @@
 // Basit JWT veya Bearer Token tarzı kontrol mekanizması
 
 function generateToken($userId) {
-    // Gerçek bir sistemde güçlü bir Secret Key ile (firebase/php-jwt) imzalanmalıdır.
-    // Şimdilik demo için base64 encode ile basit bir "BHEG-TOKEN-ID" yapısı kuruyoruz.
-    $payload = [
+    $secretKey = getenv('JWT_SECRET') ?: 'default-secret-key-12345';
+    $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
+    $payload = json_encode([
         'user_id' => $userId,
         'exp' => time() + (86400 * 7) // 7 Gün
-    ];
-    return base64_encode(json_encode($payload)) . '.mocksignature';
+    ]);
+    
+    $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+    $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+    $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $secretKey, true);
+    $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+    
+    return $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
 }
 
 function verifyTokenAndGetUser() {
@@ -39,10 +45,16 @@ function verifyTokenAndGetUser() {
         $token = $matches[1];
         $parts = explode('.', $token);
         
-        if (count($parts) >= 1) {
-            $payload = json_decode(base64_decode($parts[0]), true);
-            if ($payload && isset($payload['user_id']) && $payload['exp'] > time()) {
-                return $payload['user_id'];
+        if (count($parts) === 3) {
+            $secretKey = getenv('JWT_SECRET') ?: 'default-secret-key-12345';
+            $signature = hash_hmac('sha256', $parts[0] . "." . $parts[1], $secretKey, true);
+            $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+            
+            if (hash_equals($base64UrlSignature, $parts[2])) {
+                $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
+                if ($payload && isset($payload['user_id']) && $payload['exp'] > time()) {
+                    return $payload['user_id'];
+                }
             }
         }
     }

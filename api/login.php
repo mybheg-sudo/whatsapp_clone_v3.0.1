@@ -31,14 +31,6 @@ try {
             'username' => $user['username'],
             'systemPhone' => $user['system_phone'] ?? '905419682572'
         ];
-    } elseif ($username === 'admin1' && $password === 'password123') {
-        // Fallback test senaryosu: Tablo boşsa veya hata varsa yönetici girişi
-        $isValid = true;
-        $userData = [
-            'id' => 1,
-            'username' => 'admin1',
-            'systemPhone' => '905419682572'
-        ];
     }
 
     if ($isValid) {
@@ -53,14 +45,7 @@ try {
     }
 
 } catch (\PDOException $e) {
-    // Eğer users tablosu yoksa (ilk kurulum anı vb.) yine de frontend test edilebilsin diye admin1'i kabul et
-    if ($username === 'admin1' && $password === 'password123') {
-        echo json_encode([
-            'token' => generateToken(1),
-            'user' => ['id' => 1, 'username' => 'admin1', 'systemPhone' => '905419682572']
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'DB Hatası: ' . $e->getMessage()]);
-    }
+    error_log('DB Hatası: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Sistem hatası.']);
 }

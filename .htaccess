@@ -1,17 +1,12 @@
-# Hassas veri dosyalarına erişimi engelle
-<FilesMatch "\.(sqlite|sql|log)$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
+RewriteEngine On
 
-# Hassas PHP dosyalarına doğrudan erişimi engelle
-<FilesMatch "^(config\.php|setup_db\.php|test_db\.php)$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
+# Redirect to HTTPS (handled by Traefik/Coolify, but just in case)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Dizin listelemeyi kapat
-Options -Indexes
+# Allow direct access to existing files and directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
-# UTF-8 Zorlaması
-AddDefaultCharset UTF-8
+# Route API requests
+RewriteRule ^api/(.*)$ api/$1 [L]
