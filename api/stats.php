@@ -36,7 +36,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE DATE(created_at) = CURDATE()
+        WHERE DATE(timestamp) = CURDATE()
     ");
     $today = $stmt->fetch();
     $stats['today'] = [
@@ -52,7 +52,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
     ");
     $week = $stmt->fetch();
     $stats['week'] = [
@@ -68,7 +68,7 @@ try {
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
             COUNT(*) as total
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     ");
     $month = $stmt->fetch();
     $stats['month'] = [
@@ -98,12 +98,12 @@ try {
     // Son 7 günlük günlük mesaj sayısı (grafik için)
     $stmt = $pdo->query("
         SELECT 
-            DATE(created_at) as date,
+            DATE(timestamp) as date,
             SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent,
             SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received
         FROM messages 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DATE(created_at)
+        WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY DATE(timestamp)
         ORDER BY date ASC
     ");
     $stats['recent_activity'] = $stmt->fetchAll();

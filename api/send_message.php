@@ -66,8 +66,8 @@ if ($error) {
 if ($pdo && !empty($contactId)) {
     try {
         $stmt = $pdo->prepare(
-            "INSERT INTO messages (contact_id, phone, direction, type, content, created_at, timestamp) 
-             VALUES (?, ?, 'outgoing', 'text', ?, NOW(), NOW())"
+            "INSERT INTO messages (contact_id, phone, direction, type, content, timestamp) 
+             VALUES (?, ?, 'outgoing', 'text', ?, NOW())"
         );
         $stmt->execute([$contactId, $phone, $message]);
     } catch (\PDOException $e) {
