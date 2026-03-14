@@ -1,0 +1,17 @@
+# Hassas veri dosyalarına erişimi engelle
+<FilesMatch "\.(sqlite|sql|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Hassas PHP dosyalarına doğrudan erişimi engelle
+<FilesMatch "^(config\.php|setup_db\.php|test_db\.php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Dizin listelemeyi kapat
+Options -Indexes
+
+# UTF-8 Zorlaması
+AddDefaultCharset UTF-8

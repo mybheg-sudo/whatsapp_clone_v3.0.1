@@ -1,0 +1,5 @@
+# auth_utils.php'ye doğrudan HTTP erişimini engelle (sadece include ile kullanılır)
+<FilesMatch "^auth_utils\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
