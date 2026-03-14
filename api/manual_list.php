@@ -27,17 +27,23 @@ if (empty($phone)) {
 
 $phone = preg_replace('/[^0-9]/', '', $phone);
 
+// n8n webhook URL — environment variable'dan al
+$n8nBase = getenv('N8N_BASE_URL') ?: 'https://n8n.motomotomasyon.com';
+
 if ($action === 'add') {
-    $n8nUrl = 'https://n8n.motomotomasyon.com/webhook/add-manual-list';
+    $n8nUrl = rtrim($n8nBase, '/') . '/webhook/add-manual-list';
 } elseif ($action === 'remove') {
-    $n8nUrl = 'https://n8n.motomotomasyon.com/webhook/remove-manual-list';
+    $n8nUrl = rtrim($n8nBase, '/') . '/webhook/remove-manual-list';
 } else {
     http_response_code(400);
     echo json_encode(['error' => 'action "add" veya "remove" olmalıdır']);
     exit;
 }
 
-$payload = json_encode(['phone' => $phone]);
+$payload = json_encode([
+    'phone'   => $phone,
+    'user_id' => $userId
+]);
 
 $ch = curl_init($n8nUrl);
 curl_setopt_array($ch, [
@@ -53,6 +59,7 @@ curl_setopt_array($ch, [
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error    = curl_error($ch);
+curl_close($ch);
 
 if ($error) {
     http_response_code(502);

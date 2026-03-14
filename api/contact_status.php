@@ -24,9 +24,14 @@ if (empty($phone)) {
 
 $phone = preg_replace('/[^0-9]/', '', $phone);
 
-// n8n webhook üzerinden durum sorgula
-$url = 'https://n8n.motomotomasyon.com/webhook/get-contact-status';
-$payload = json_encode(['phone' => $phone]);
+// n8n webhook URL — environment variable'dan al
+$n8nBase = getenv('N8N_BASE_URL') ?: 'https://n8n.motomotomasyon.com';
+$url = rtrim($n8nBase, '/') . '/webhook/get-contact-status';
+
+$payload = json_encode([
+    'phone'   => $phone,
+    'user_id' => $userId
+]);
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [

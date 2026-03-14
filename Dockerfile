@@ -33,4 +33,8 @@ RUN chown -R www-data:www-data /var/www/html
 # Expose port 80
 EXPOSE 80
 
+# Healthcheck — Coolify'ın running:healthy görmesi için
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/api/login.php || exit 1
+
 CMD ["apache2-foreground"]

@@ -30,12 +30,15 @@ if (empty($phone) || empty($message)) {
 // Telefon numarasını temizle
 $phone = preg_replace('/[^0-9]/', '', $phone);
 
-// n8n webhook'a POST gönder
-$n8nUrl = 'https://n8n.motomotomasyon.com/webhook/send-whatsapp';
+// n8n webhook URL — environment variable'dan al
+$n8nBase = getenv('N8N_BASE_URL') ?: 'https://n8n.motomotomasyon.com';
+$n8nUrl = rtrim($n8nBase, '/') . '/webhook/send-whatsapp';
 
 $payload = json_encode([
-    'phone'   => $phone,
-    'message' => $message
+    'phone'      => $phone,
+    'message'    => $message,
+    'user_id'    => $userId,
+    'contact_id' => $contactId
 ]);
 
 $ch = curl_init($n8nUrl);
@@ -52,11 +55,25 @@ curl_setopt_array($ch, [
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error    = curl_error($ch);
+curl_close($ch);
 
 if ($error) {
     http_response_code(502);
     echo json_encode(['error' => "n8n bağlantı hatası: {$error}"]);
     exit;
+}
+
+// Giden mesajı MySQL'e de logla (n8n tarafında da loglanıyor ama panel tarafında da tutulmalı)
+if ($pdo && !empty($contactId)) {
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO messages (user_id, contact_id, phone, direction, type, content, created_at, timestamp) 
+             VALUES (?, ?, ?, 'outgoing', 'text', ?, NOW(), NOW())"
+        );
+        $stmt->execute([$userId, $contactId, $phone, $message]);
+    } catch (\PDOException $e) {
+        error_log("Giden mesaj log hatası: " . $e->getMessage());
+    }
 }
 
 $data = json_decode($response, true);

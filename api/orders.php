@@ -24,9 +24,14 @@ if (empty($phone)) {
 
 $phone = preg_replace('/[^0-9]/', '', $phone);
 
-// n8n webhook üzerinden sipariş sorgula
-$url = 'https://n8n.motomotomasyon.com/webhook/get-orders';
-$payload = json_encode(['phone' => $phone]);
+// n8n webhook URL — environment variable'dan al
+$n8nBase = getenv('N8N_BASE_URL') ?: 'https://n8n.motomotomasyon.com';
+$url = rtrim($n8nBase, '/') . '/webhook/get-orders';
+
+$payload = json_encode([
+    'phone'   => $phone,
+    'user_id' => $userId
+]);
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [
